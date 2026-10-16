@@ -1,4 +1,5 @@
 import type { Act, StepName } from "../run/steps";
+import type { RunStatus } from "../store/store";
 import type { RunView, StepView, VerificationView } from "../run/view";
 
 export type Tone = "neutral" | "ok" | "warn" | "fail";
@@ -117,4 +118,11 @@ export function unavailableText(reason: string): string {
 
 export function formatDateTimeBr(iso: string): string {
   return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }).format(new Date(iso));
+}
+
+export function runStatusLabel(status: RunStatus): { text: string; tone: Tone } {
+  if (status === "completed") return { text: "concluída", tone: "ok" };
+  if (status === "failed") return { text: "falhou", tone: "fail" };
+  if (status === "interrupted") return { text: "interrompida", tone: "warn" };
+  return { text: "em andamento", tone: "neutral" };
 }

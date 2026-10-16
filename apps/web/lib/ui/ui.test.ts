@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { RunView, StepView } from "../run/view";
 import { driveRun } from "./driver";
-import { explainError, formatSeconds, railProgress, runStatusText, stepStatusLabel, verificationLabel } from "./labels";
+import { explainError, formatSeconds, railProgress, runStatusLabel, runStatusText, stepStatusLabel, verificationLabel } from "./labels";
 import { toCurl, toTypeScript } from "./snippets";
 
 const step = (name: StepView["name"], status: StepView["status"], extra: Partial<StepView> = {}): StepView => ({
@@ -45,6 +45,13 @@ describe("textos", () => {
     expect(verificationLabel("confere")).toEqual({ text: "confere", tone: "ok" });
     expect(verificationLabel("nao_conferido")).toEqual({ text: "ainda não conferido", tone: "warn" });
     expect(verificationLabel("diverge")).toEqual({ text: "diverge", tone: "fail" });
+  });
+
+  it("status da execução no painel", () => {
+    expect(runStatusLabel("completed")).toEqual({ text: "concluída", tone: "ok" });
+    expect(runStatusLabel("failed")).toEqual({ text: "falhou", tone: "fail" });
+    expect(runStatusLabel("interrupted")).toEqual({ text: "interrompida", tone: "warn" });
+    expect(runStatusLabel("running")).toEqual({ text: "em andamento", tone: "neutral" });
   });
 
   it("erros conhecidos e desconhecidos", () => {

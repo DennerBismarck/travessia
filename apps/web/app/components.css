@@ -488,3 +488,150 @@
 .browser-checks li {
   min-width: 0;
 }
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px 24px;
+  margin: 8px 0 8px;
+}
+
+.figures div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.figures dt {
+  font-size: 0.75rem;
+  color: var(--grafite);
+}
+
+.figures dd {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 600;
+}
+
+.figure-note {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--grafite);
+}
+
+.dash-section {
+  margin-top: 32px;
+}
+
+.dash-section h2 {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+}
+
+.latency {
+  display: grid;
+  gap: 12px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.latency li {
+  display: grid;
+  grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+  gap: 2px 12px;
+  align-items: center;
+}
+
+.latency svg {
+  width: 100%;
+  height: 12px;
+}
+
+.latency-values {
+  grid-column: 2;
+  color: var(--grafite);
+}
+
+.latency-track {
+  fill: var(--linha);
+}
+
+.latency-bar {
+  fill: var(--base);
+}
+
+.latency-p95 {
+  fill: var(--tinta);
+}
+
+.dash-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.dash-table th,
+.dash-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--linha);
+  text-align: left;
+  vertical-align: top;
+}
+
+.dash-table thead th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--grafite);
+}
+
+.dash-transfers {
+  display: grid;
+  gap: 12px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dash-transfers li {
+  min-width: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--linha);
+  font-size: 0.9375rem;
+}
+
+@media (max-width: 640px) {
+  .latency li {
+    grid-template-columns: 1fr;
+  }
+
+  .latency-values {
+    grid-column: 1;
+  }
+
+  .dash-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .dash-table,
+  .dash-table tbody,
+  .dash-table tr,
+  .dash-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .dash-table tr {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--linha);
+  }
+
+  .dash-table td {
+    padding: 2px 0;
+    border: 0;
+  }
+}

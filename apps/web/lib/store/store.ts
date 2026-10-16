@@ -82,7 +82,22 @@ export interface Store {
   getVerifications(runId: string): VerificationRow[];
   addReplay(runId: string, responseJson: string, sameTransaction: boolean, at: string): void;
   getReplays(runId: string): ReplayRow[];
+  runCounts(): Record<RunStatus, number>;
+  completedFlows(): { depositValue: number | null; payoutValueInBrl: string | null }[];
+  okStepLatencies(): { name: StepName; latencyMs: number }[];
+  recentRunsSummary(limit: number): RunSummaryRow[];
+  recentVerifications(limit: number): VerificationRow[];
+  verificationCounts(): { total: number; confere: number };
   close(): void;
+}
+
+export interface RunSummaryRow {
+  id: string;
+  status: RunStatus;
+  startedAt: string;
+  finishedAt: string | null;
+  confere: number;
+  legs: number;
 }
 
 const SCHEMA = `
@@ -251,6 +266,48 @@ export function openStore(path: string): Store {
         .prepare("SELECT id, run_id AS runId, response_json AS responseJson, same_transaction AS same, created_at AS createdAt FROM replays WHERE run_id = ? ORDER BY id")
         .all(runId) as unknown as { id: number; runId: string; responseJson: string; same: number; createdAt: string }[];
       return rows.map(({ same, ...row }) => ({ ...row, sameTransaction: same === 1 }));
+    },
+    runCounts() {
+      const counts: Record<RunStatus, number> = { running: 0, completed: 0, failed: 0, interrupted: 0 };
+      for (const row of db.prepare("SELECT status, COUNT(*) AS n FROM runs GROUP BY status").all() as unknown as { status: RunStatus; n: number }[]) {
+        counts[row.status] = Number(row.n);
+      }
+      return counts;
+    },
+    completedFlows() {
+      return db
+        .prepare(
+          `SELECT json_extract(c.response_json, '$.data.value') AS depositValue, json_extract(p.response_json, '$.valueInBrl') AS payoutValueInBrl
+           FROM runs r
+           LEFT JOIN steps c ON c.run_id = r.id AND c.name = 'deposit_confirm'
+           LEFT JOIN steps p ON p.run_id = r.id AND p.name = 'payout'
+           WHERE r.status = 'completed'`,
+        )
+        .all() as unknown as { depositValue: number | null; payoutValueInBrl: string | null }[];
+    },
+    okStepLatencies() {
+      return db
+        .prepare("SELECT name, latency_ms AS latencyMs FROM steps WHERE status = 'ok' AND latency_ms IS NOT NULL ORDER BY started_at DESC LIMIT 2500")
+        .all() as unknown as { name: StepName; latencyMs: number }[];
+    },
+    recentRunsSummary(limit) {
+      return db
+        .prepare(
+          `SELECT r.id, r.status, r.started_at AS startedAt, r.finished_at AS finishedAt,
+             COALESCE(SUM(CASE WHEN v.result = 'confere' THEN 1 ELSE 0 END), 0) AS confere, COUNT(v.leg) AS legs
+           FROM runs r LEFT JOIN verifications v ON v.run_id = r.id
+           GROUP BY r.id ORDER BY r.started_at DESC LIMIT ?`,
+        )
+        .all(limit) as unknown as RunSummaryRow[];
+    },
+    recentVerifications(limit) {
+      return db.prepare(`SELECT ${VERIFICATION_COLUMNS} FROM verifications ORDER BY checked_at DESC, run_id DESC LIMIT ?`).all(limit) as unknown as VerificationRow[];
+    },
+    verificationCounts() {
+      const row = db
+        .prepare("SELECT COUNT(*) AS total, COALESCE(SUM(CASE WHEN result = 'confere' THEN 1 ELSE 0 END), 0) AS confere FROM verifications")
+        .get() as { total: number; confere: number };
+      return { total: Number(row.total), confere: Number(row.confere) };
     },
     close() {
       db.close();

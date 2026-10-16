@@ -70,3 +70,20 @@ test("kill switch: mensagem clara e link para a última travessia concluída", a
   await expect(page.getByText("As execuções estão pausadas no momento.")).toBeVisible();
   await expect(page.getByRole("link", { name: "Veja a última travessia concluída." })).toHaveAttribute("href", /^\/r\/[0-9a-f]{12}$/);
 });
+
+test("painel ao vivo: números, latência por passo e links para os comprovantes", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Painel ao vivo" }).click();
+  await expect(page).toHaveURL(/\/painel$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Painel ao vivo" })).toBeVisible();
+  await expect(page.getByTestId("dash-runs-total")).toHaveText(/^\d+$/);
+  await expect(page.getByTestId("dash-latency-row")).toHaveCount(5);
+  await expect(page.getByText(/Atualizado/)).toBeVisible();
+  const first = page.getByTestId("dash-run-link").first();
+  const href = await first.getAttribute("href");
+  expect(href).toMatch(/^\/r\/[0-9a-f]{12}$/);
+  expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
+  expect(await seriousA11yViolations(page)).toEqual([]);
+  await first.click();
+  await expect(page).toHaveURL(new RegExp(`${href}$`));
+});

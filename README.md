@@ -30,6 +30,8 @@ sequenceDiagram
 
 O navegador chama `next` em sequência; cada resposta traz o passo executado e as conferências. O comprovante fica em `/r/{id}`, com extrato CSV e imagem de preview.
 
+No comprovante, **Conferir pelo meu navegador** refaz as quatro conferências no navegador de quem está vendo, direto numa RPC pública da Base Sepolia, sem passar pelo servidor da Travessia. O **[painel ao vivo](https://travessia-hodle.fly.dev/painel)** (`/painel`) mostra todas as execuções, o volume que passou pela API, a taxa de `confere` e a latência de cada passo (mediana e p95).
+
 ## Decisões de engenharia
 
 - **Idempotência de verdade.** Cada passo de escrita tem uma chave derivada do id da execução (`trv-{id}-dep`, `-swap`, `-pay`), gravada no banco antes da chamada. O botão "Pagar de novo" repete o saque com a mesma chave e mostra lado a lado: mesmo `transactionId`, mesmo `txHash`, nenhuma transação nova.

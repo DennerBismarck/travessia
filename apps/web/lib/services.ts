@@ -2,6 +2,7 @@ import "server-only";
 import { createChainReader, verifyTransfer } from "@travessia/hodle/chain";
 import { createHodleClient } from "@travessia/hodle/client";
 import { loadConfig, type AppConfig } from "./config";
+import { createDashboardReader } from "./dashboard";
 import { createHealthChecker } from "./health";
 import { createRunLock } from "./run/lock";
 import { createOrchestrator, type Orchestrator } from "./run/orchestrator";
@@ -14,6 +15,7 @@ export interface Services {
   orchestrator: Orchestrator;
   wallet: ReturnType<typeof createWalletReader>;
   health: ReturnType<typeof createHealthChecker>;
+  dashboard: ReturnType<typeof createDashboardReader>;
 }
 
 function createServices(config: AppConfig): Services {
@@ -38,6 +40,7 @@ function createServices(config: AppConfig): Services {
     orchestrator,
     wallet: createWalletReader({ client, chain, store }),
     health: createHealthChecker({ client, chain, store }),
+    dashboard: createDashboardReader(store),
   };
 }
 
