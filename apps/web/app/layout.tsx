@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Instrument_Sans } from "next/font/google";
 import type { ReactNode } from "react";
 import "./globals.css";
+import "./components.css";
 
 const sans = Instrument_Sans({
   subsets: ["latin"],
