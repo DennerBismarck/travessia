@@ -1,0 +1,19 @@
+{
+  "name": "@travessia/hodle",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./money": "./src/money/index.ts",
+    "./client": "./src/client/index.ts",
+    "./chain": "./src/chain/index.ts",
+    "./webhooks": "./src/webhooks/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "viem": "2.57.7",
+    "zod": "4.6.7"
+  }
+}

@@ -24,3 +24,6 @@ data/
 
 # planejamento interno (spec e plano): fora do repositório público
 docs/superpowers/
+*.sqlite-wal
+*.sqlite-shm
+*.tsbuildinfo
