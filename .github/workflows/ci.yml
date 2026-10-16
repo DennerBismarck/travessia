@@ -18,3 +18,7 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm --filter @travessia/web build
+        env:
+          HODLE_API_KEY: hodle_test_CIFAKEKEY0000000000
+      - run: pnpm secret-scan

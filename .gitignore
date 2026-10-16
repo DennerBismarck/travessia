@@ -27,3 +27,4 @@ docs/superpowers/
 *.sqlite-wal
 *.sqlite-shm
 *.tsbuildinfo
+apps/web/next-env.d.ts
