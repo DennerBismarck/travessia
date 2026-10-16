@@ -1,0 +1,18 @@
+{
+  "name": "travessia-hodle-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Servidor MCP não oficial para o sandbox da Hodle: depósito, settle, troca e saque com conferência humana.",
+  "bin": { "travessia-hodle-mcp": "./bin/travessia-hodle-mcp.mjs" },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "start": "node ./bin/travessia-hodle-mcp.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "@travessia/hodle": "workspace:*",
+    "tsx": "4.23.15",
+    "zod": "4.6.7"
+  }
+}
