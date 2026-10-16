@@ -70,6 +70,45 @@ apps/web         Next.js: orquestrador com trava, SQLite (node:sqlite), rotas e 
 packages/mcp     servidor MCP para agentes de IA
 ```
 
+## Servidor MCP para agentes de IA
+
+`packages/mcp` é um servidor MCP (stdio) que segue o contrato publicado em [docs.hodle.com.br/docs/ai/mcp](https://docs.hodle.com.br/docs/ai/mcp): chave só pelo ambiente, ferramentas de escrita registradas só com `HODLE_MCP_ALLOW_WRITES=true`, `confirm: true` em toda escrita (sem ele nada é enviado e a resposta descreve o que seria feito), PIN e chave protegida só pelo ambiente e mascarados na saída, timeouts de 15 s/60 s e `outcomeUnknown` com instrução de conferir antes de repetir.
+
+Ele traz as três ferramentas de que um agente precisa para fechar sozinho o ciclo do sandbox: consultar o depósito, simular a chegada do Pix e trocar de ativo.
+
+| Ferramenta | Tipo | Chamada |
+| --- | --- | --- |
+| `hodle_wallet_get` | leitura | `GET /api/wallet` |
+| `hodle_deposit_status` | leitura | `GET /api/deposit/{id}` |
+| `hodle_deposit_asset` | escrita | `POST /api/deposit/asset` |
+| `hodle_sandbox_settle` | escrita, só sandbox | `POST /avenia/webhook` |
+| `hodle_wallet_swap` | escrita, só sandbox | `POST /api/wallet/swap` |
+| `hodle_wallet_payout` | escrita | `POST /api/wallet/payout` (recusa `subAccountId`) |
+
+```bash
+claude mcp add travessia-hodle \
+  -e HODLE_API_KEY=hodle_test_... \
+  -e HODLE_MCP_ALLOW_WRITES=true \
+  -- node /caminho/para/travessia/packages/mcp/bin/travessia-hodle-mcp.mjs
+```
+
+`pnpm mcp:smoke` fecha o ciclo usando só as ferramentas, pelo mesmo stdio que um agente usa:
+
+```
+travessia-hodle-mcp: sandbox, escrita ligada
+ferramentas: hodle_wallet_get, hodle_deposit_status, hodle_deposit_asset, hodle_sandbox_settle, hodle_wallet_swap, hodle_wallet_payout
+→ hodle_deposit_asset (recusado)
+   confirm: true ausente: nada foi enviado.
+→ hodle_deposit_asset
+→ hodle_sandbox_settle
+→ hodle_deposit_status
+   depósito COMPLETED, mint 0xe30f9e4bca35cfb8dd4aae11fb85ae7f354d00a240623d6e9ec16f74a24e784c
+→ hodle_wallet_swap
+   troca 1.08 BRLH → 0.2 USDH
+→ hodle_wallet_payout
+   saque COMPLETED: 0.1 USDH, endToEndId SANDBOX06BBCB33CB324E91B95B4EDEF, tx 0xdc7277030620935a87effdb6e009da6a093808283b58b6205966b3a5a48ffa50
+```
+
 ## Licença
 
 MIT. Se for útil para a Hodle, é de vocês.
