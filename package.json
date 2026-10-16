@@ -12,7 +12,8 @@
     "test": "vitest run",
     "secret-scan": "tsx scripts/secret-scan.ts apps/web/.next",
     "contract": "tsx --env-file=.env.sandbox scripts/contract.ts",
-    "mcp:smoke": "tsx --env-file=.env.sandbox scripts/mcp-smoke.ts"
+    "mcp:smoke": "tsx --env-file=.env.sandbox scripts/mcp-smoke.ts",
+    "e2e": "pnpm --filter @travessia/web e2e"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "1.32.1",
