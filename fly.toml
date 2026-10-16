@@ -1,12 +1,12 @@
-app = "travessia"
+app = "travessia-hodle"
 primary_region = "gru"
 
 [build.args]
-  PUBLIC_BASE_URL = "https://travessia.fly.dev"
+  PUBLIC_BASE_URL = "https://travessia-hodle.fly.dev"
 
 [env]
   HODLE_API_URL = "https://sandbox-api.hodle.com.br"
-  PUBLIC_BASE_URL = "https://travessia.fly.dev"
+  PUBLIC_BASE_URL = "https://travessia-hodle.fly.dev"
   DATABASE_PATH = "/data/travessia.sqlite"
   DAILY_RUN_CAP = "200"
   PIX_KEY_DEMO = "recebedor@example.com"
