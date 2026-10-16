@@ -13,6 +13,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
+          # o pnpm só existe depois do corepack enable, então sem cache automático do gerenciador
+          package-manager-cache: false
       - run: corepack enable pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
