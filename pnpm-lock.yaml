@@ -53,6 +53,9 @@ importers:
       server-only:
         specifier: 0.0.1
         version: 0.0.1
+      viem:
+        specifier: 2.57.7
+        version: 2.57.7(typescript@5.9.3)(zod@4.6.7)
       zod:
         specifier: 4.6.7
         version: 4.6.7

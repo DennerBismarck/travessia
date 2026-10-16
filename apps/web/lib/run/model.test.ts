@@ -165,6 +165,12 @@ describe("buildRunView", () => {
     expect(view.closing).toBeNull();
   });
 
+  it("conferência expõe origem e destino esperados para quem quiser refazer a checagem", () => {
+    const row = { ...verification("swap_debit", "swap", H.debit, "BRLH", "54000000000000000000"), fromAddress: WALLET, toAddress: null };
+    const view = buildRunView({ run: completedRun, steps: completedSteps, verifications: [row], replays: [] });
+    expect(view.verifications[0]).toMatchObject({ expectedFrom: WALLET, expectedTo: null });
+  });
+
   it("repetições do saque", () => {
     const replays: ReplayRow[] = [{ id: 1, runId: RUN_ID, responseJson: JSON.stringify(payoutBody), sameTransaction: true, createdAt: T0 }];
     const view = buildRunView({ run: completedRun, steps: completedSteps, verifications: completedVerifications, replays });

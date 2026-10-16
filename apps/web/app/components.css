@@ -472,3 +472,19 @@
   font-size: 0.875rem;
   color: var(--grafite);
 }
+
+.browser-verify {
+  margin-top: 16px;
+}
+
+.browser-checks {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.browser-checks li {
+  min-width: 0;
+}

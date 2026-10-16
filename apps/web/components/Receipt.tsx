@@ -1,5 +1,6 @@
 import type { RunView } from "@/lib/run/view";
 import { verificationLabel } from "@/lib/ui/labels";
+import { BrowserVerify } from "./BrowserVerify";
 import { HashLink } from "./HashLink";
 
 export function Receipt({ view }: { view: RunView }) {
@@ -49,6 +50,7 @@ export function Receipt({ view }: { view: RunView }) {
       {view.verifications.some((v) => v.apiSays.expected) && (
         <p className="muted small">Esperado: no depósito o sandbox não informa o valor recebido, então a coluna da API mostra o valor pedido.</p>
       )}
+      <BrowserVerify verifications={view.verifications} />
     </section>
   );
 }

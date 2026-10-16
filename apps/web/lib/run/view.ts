@@ -36,6 +36,9 @@ export interface VerificationView {
   token: Token;
   apiSays: { raw: string; display: string; expected: boolean };
   chainSays: { raw: string; display: string } | null;
+  /** Origem e destino que o servidor exigiu; servem para qualquer um refazer a checagem. */
+  expectedFrom: string | null;
+  expectedTo: string | null;
   result: VerificationResultValue;
   reason: string | null;
 }
@@ -138,6 +141,8 @@ function toVerificationView(row: VerificationRow): VerificationView {
     token,
     apiSays: { raw: row.rawExpected, display: formatToken(BigInt(row.rawExpected), token), expected: row.leg === "deposit_mint" },
     chainSays: row.rawObserved === null ? null : { raw: row.rawObserved, display: formatToken(BigInt(row.rawObserved), token) },
+    expectedFrom: row.fromAddress,
+    expectedTo: row.toAddress,
     result: row.result,
     reason: row.reason,
   };

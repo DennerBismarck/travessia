@@ -45,6 +45,9 @@ test("executa a travessia e confere os quatro movimentos na Base Sepolia", async
 
   await page.goto(permalink!);
   await expect(page.getByTestId("verification-result").filter({ hasText: /^confere$/ })).toHaveCount(4);
+  await page.getByRole("button", { name: "Conferir pelo meu navegador" }).click();
+  await expect(page.getByTestId("browser-check").filter({ hasText: "confirmado pelo seu navegador" })).toHaveCount(4, { timeout: 30_000 });
+  await expect(page.getByText("Nada disso passou pelo servidor da Travessia.")).toBeVisible();
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /opengraph-image/);
   expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
   expect(await seriousA11yViolations(page)).toEqual([]);
