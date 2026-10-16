@@ -40,10 +40,6 @@ O navegador chama `next` em sequência; cada resposta traz o passo executado e a
 - **Webhooks prontos para produção.** Verificação HMAC sobre o corpo cru com janela de 5 min e comparação em tempo constante, e um livro de eventos que deduplica e nunca regride o estado, testados com os payloads da documentação. O sandbox não entrega webhooks para fora, então a demo usa as respostas síncronas da API.
 - **A chave fica no servidor.** Módulos `server-only`, redação em todo registro de requisição (`Bearer [REDACTED]` no "ver código") e varredura no CI que falha o build se algo com formato de chave aparecer na saída.
 
-## O que o sandbox não prova
-
-Pix de verdade (o BR Code não é pagável e o `endToEndId` é `SANDBOX…`), Lightning, falhas e estornos (`PAYOUT_FAILED`, `PAYOUT_REFUNDED`, `DEPOSIT_ASSET_REFUNDED`), MED, entrega de webhooks e câmbio de mercado (o sandbox usa 1 USD = R$ 5,40 fixo).
-
 ## Rodar localmente
 
 Requisitos: Node 22 (`.nvmrc`) e pnpm via corepack. Crie uma chave `hodle_test_` em app-sandbox.hodle.com.br → APIs e webhooks → Ambientes: Sandbox.

@@ -338,15 +338,13 @@
 
 .receipt,
 .closing,
-.replay,
-.not-proven {
+.replay {
   margin-top: 32px;
 }
 
 .receipt h2,
 .closing h2,
-.replay h2,
-.not-proven h2 {
+.replay h2 {
   margin: 0 0 6px;
   font-size: 1.25rem;
 }
@@ -463,14 +461,6 @@
   margin-top: 24px;
 }
 
-.not-proven ul {
-  margin: 8px 0 0;
-  padding-left: 20px;
-}
-
-.not-proven li {
-  margin: 6px 0;
-}
 
 .footer {
   display: flex;

@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { Acts } from "@/components/Acts";
 import { Closing } from "@/components/Closing";
 import { Header } from "@/components/Header";
-import { NotProven } from "@/components/NotProven";
 import { Receipt } from "@/components/Receipt";
 import { ReplayProof } from "@/components/ReplayProof";
 import { RunLinks } from "@/components/RunLinks";
@@ -54,7 +53,6 @@ export default async function ReceiptPage({ params }: Props) {
       <p className="run-links">
         <a href="/">Executar uma nova travessia</a>
       </p>
-      <NotProven />
       <SiteFooter />
     </main>
   );

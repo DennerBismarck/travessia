@@ -15,6 +15,7 @@ test("tela inicial: aviso, carteira e botão, sem rolagem horizontal e acessíve
   await expect(page.getByText("Não oficial — construído sobre o sandbox da Hodle.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Executar com R$ 54,00" })).toBeEnabled();
   await expect(page.getByText("Carteira de teste na Base Sepolia")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "O que o sandbox não prova" })).toHaveCount(0);
   expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
   expect(await seriousA11yViolations(page)).toEqual([]);
 });
