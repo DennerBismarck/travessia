@@ -20,6 +20,8 @@ export interface DoubleOptions {
   payoutError?: { status: number; body: unknown };
   /** O primeiro saque é aceito no servidor, mas a resposta nunca chega. */
   hangPayoutOnce?: boolean;
+  /** O swap responde 409 SANDBOX_SWAP_IN_PROGRESS nas primeiras N chamadas. */
+  swapInProgressTimes?: number;
   onRequest?: (method: string, path: string, body: any) => void;
 }
 
@@ -35,6 +37,7 @@ export function createSandboxDouble(options: DoubleOptions = {}) {
   const calls: { method: string; path: string; body: any }[] = [];
   let payoutHung = false;
   let swapLimited = false;
+  let swapInProgressLeft = options.swapInProgressTimes ?? 0;
 
   const payoutResponse = (body: any) => ({
     success: true,
@@ -111,6 +114,10 @@ export function createSandboxDouble(options: DoubleOptions = {}) {
     }
 
     if (method === "POST" && url.pathname === "/api/wallet/swap") {
+      if (swapInProgressLeft > 0) {
+        swapInProgressLeft -= 1;
+        return json(409, { success: false, error: "swap em andamento", errorCode: "SANDBOX_SWAP_IN_PROGRESS" });
+      }
       if (options.rateLimitSwapOnce && !swapLimited) {
         swapLimited = true;
         return json(429, { success: false, error: "Too many requests" }, { "retry-after": String(options.rateLimitSwapOnce) });

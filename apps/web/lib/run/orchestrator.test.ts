@@ -304,4 +304,74 @@ describe("orquestrador", () => {
     const view = await orchestrator.getView(runId, { recheck: true });
     expect(view?.verifications.map((v) => v.result)).toEqual(["confere", "confere", "confere", "confere"]);
   });
+
+  it("SANDBOX_SWAP_IN_PROGRESS: espera antes de repetir e não queima as tentativas", async () => {
+    const { orchestrator, store } = setup({ swapInProgressTimes: 2 });
+    const runId = started(orchestrator.start());
+    for (let i = 0; i < 3; i++) await orchestrator.next(runId);
+    const first = await orchestrator.next(runId);
+    expect(first).toMatchObject({ kind: "progressed", retryAfterSec: 3 });
+    expect((await orchestrator.next(runId))).toMatchObject({ kind: "progressed", retryAfterSec: 3 });
+    expect((await runToEnd(orchestrator, runId)).kind).toBe("finished");
+    expect(store.getStep(runId, "swap")).toMatchObject({ status: "ok", attempts: 3 });
+    expect(store.getRun(runId)?.status).toBe("completed");
+  });
+
+  it("resultado incerto sem Retry-After: espera um pouco antes de repetir", async () => {
+    const { orchestrator } = setup({ hangPayoutOnce: true });
+    const runId = started(orchestrator.start());
+    let result: NextResult = { kind: "not_found" };
+    for (let i = 0; i < 5; i++) result = await orchestrator.next(runId);
+    expect(result).toMatchObject({ kind: "progressed", retryAfterSec: 2 });
+  });
+
+  it("pagar de novo em paralelo: uma repetição por vez, as outras recusadas", async () => {
+    const { orchestrator, store, double } = setup();
+    const runId = started(orchestrator.start());
+    await runToEnd(orchestrator, runId);
+    const results = await Promise.all([1, 2, 3, 4, 5].map(() => orchestrator.replayPayout(runId)));
+    expect(results.filter((r) => r.kind === "replayed")).toHaveLength(1);
+    expect(results.filter((r) => r.kind === "refused")).toHaveLength(4);
+    expect(store.getReplays(runId)).toHaveLength(1);
+    expect(double.payouts.size).toBe(1);
+  });
+
+  it("pagar de novo não roda enquanto outra execução usa a carteira", async () => {
+    const { orchestrator, double } = setup();
+    const first = started(orchestrator.start());
+    await runToEnd(orchestrator, first);
+    started(orchestrator.start());
+    const before = double.calls.length;
+    expect(await orchestrator.replayPayout(first)).toMatchObject({ kind: "refused" });
+    expect(double.calls.length).toBe(before);
+  });
+
+  it("pagar de novo respeita o kill switch", async () => {
+    const ctx = setup();
+    const runId = started(ctx.orchestrator.start());
+    await runToEnd(ctx.orchestrator, runId);
+    const paused = createOrchestrator({
+      client: createHodleClient({ apiKey: API_KEY, baseUrl: "https://sandbox.test", fetch: ctx.double.fetch }),
+      store: ctx.store,
+      lock: createRunLock({ onExpire: () => {} }),
+      verify: async () => ({ result: "confere", observed: null, reason: null }),
+      pixKey: "recebedor@example.com",
+      dailyRunCap: 200,
+      killSwitch: true,
+    });
+    const before = ctx.double.calls.length;
+    expect(await paused.replayPayout(runId)).toEqual({ kind: "refused", reason: "As execuções estão pausadas no momento." });
+    expect(ctx.double.calls.length).toBe(before);
+  });
+
+  it("pagar de novo tem um teto global por minuto", async () => {
+    const { orchestrator, advance } = setup({}, { maxReplaysPerMinute: 2 });
+    const runId = started(orchestrator.start());
+    await runToEnd(orchestrator, runId);
+    expect((await orchestrator.replayPayout(runId)).kind).toBe("replayed");
+    expect((await orchestrator.replayPayout(runId)).kind).toBe("replayed");
+    expect(await orchestrator.replayPayout(runId)).toEqual({ kind: "refused", reason: "Muitas repetições no último minuto: tente de novo em instantes." });
+    advance(60_001);
+    expect((await orchestrator.replayPayout(runId)).kind).toBe("replayed");
+  });
 });

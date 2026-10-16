@@ -172,6 +172,11 @@ describe("driveRun", () => {
     expect(await driveRun(s.deps)).toEqual({ kind: "interrupted", view: view(false) });
   });
 
+  it("rede caiu já no início: devolve erro em vez de travar", async () => {
+    const s = script([{ status: 0, body: null }]);
+    expect(await driveRun(s.deps)).toEqual({ kind: "error", message: "Não foi possível falar com o servidor. Tente de novo." });
+  });
+
   it("rede caiu: tenta 3 vezes e desiste com mensagem", async () => {
     const s = script([{ status: 201, body: { runId: "abcdef123456" } }, { status: 0, body: null }, { status: 0, body: null }, { status: 0, body: null }, { status: 0, body: null }]);
     expect(await driveRun(s.deps)).toEqual({ kind: "error", message: "Conexão perdida com o servidor." });

@@ -19,7 +19,13 @@ export type DriveOutcome =
 export async function driveRun(deps: DriverDeps): Promise<DriveOutcome> {
   let runId: string | null = null;
   for (let attempt = 0; runId === null; attempt++) {
-    const { status, body } = await deps.post("/api/runs");
+    let started: { status: number; body: unknown };
+    try {
+      started = await deps.post("/api/runs");
+    } catch {
+      return { kind: "error", message: "Não foi possível falar com o servidor. Tente de novo." };
+    }
+    const { status, body } = started;
     const start = body as StartBody;
     if (status === 201 && "runId" in start) {
       runId = start.runId;

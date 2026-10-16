@@ -36,6 +36,8 @@ export interface OrchestratorDeps {
   depositPollIntervalMs?: number;
   maxAttempts?: number;
   maxReplays?: number;
+  /** Teto global de repetições de saque por minuto (protege o limite de 60 req/min da chave). */
+  maxReplaysPerMinute?: number;
 }
 
 export type StartResult =
@@ -77,6 +79,8 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
   const newRunId = deps.newRunId ?? (() => randomUUID().replaceAll("-", "").slice(0, 12));
   const maxAttempts = deps.maxAttempts ?? 4;
   const maxReplays = deps.maxReplays ?? 3;
+  const maxReplaysPerMinute = deps.maxReplaysPerMinute ?? 10;
+  let recentReplays: number[] = [];
   const pollTimeoutMs = deps.depositPollTimeoutMs ?? 10_000;
   const pollIntervalMs = deps.depositPollIntervalMs ?? 1_000;
 
@@ -130,7 +134,9 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
       iso(),
     );
     if (!retryable) return { status: "failed" };
-    return { status: "retry", retryAfterSec: error.retryAfter ?? (error.status === 429 ? 5 : null) };
+    // Sem Retry-After, espera um pouco antes de repetir com a mesma chave: repetir na hora só queima tentativas.
+    const defaultWait = error.status === 429 ? 5 : error.code === "SANDBOX_SWAP_IN_PROGRESS" ? 3 : 2;
+    return { status: "retry", retryAfterSec: error.retryAfter ?? defaultWait };
   }
 
   async function callStep<T>(
@@ -371,6 +377,7 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
 
   async function replayPayout(runId: string): Promise<ReplayResult> {
     if (!isRunId(runId) || !store.getRun(runId)) return { kind: "not_found" };
+    if (deps.killSwitch) return { kind: "refused", reason: "As execuções estão pausadas no momento." };
     const payout = store.getStep(runId, "payout");
     if (payout?.status !== "ok" || !payout.requestJson || !payout.responseJson) {
       return { kind: "refused", reason: "O saque desta execução não foi concluído: não há pagamento para repetir." };
@@ -387,6 +394,19 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
       pixKeyType: PixKeyType;
       externalId: string;
     };
+    const t = now();
+    recentReplays = recentReplays.filter((at) => t - at < 60_000);
+    if (recentReplays.length >= maxReplaysPerMinute) {
+      return { kind: "refused", reason: "Muitas repetições no último minuto: tente de novo em instantes." };
+    }
+    // A repetição usa a carteira compartilhada: entra na mesma trava das execuções. Tudo até aqui é síncrono,
+    // então checar o limite e pegar a trava acontecem sem corrida.
+    const holder = `replay-${runId}`;
+    if (!lock.acquire(holder, t).ok) {
+      return { kind: "refused", reason: "Outra operação está usando a carteira de teste agora: tente de novo em alguns segundos." };
+    }
+    lock.tryBeginStep(holder);
+    recentReplays.push(t);
     try {
       const result = await client.createPayout({
         valueCents: BigInt(body.value),
@@ -402,6 +422,9 @@ export function createOrchestrator(deps: OrchestratorDeps): Orchestrator {
     } catch (error) {
       if (!(error instanceof HodleError)) throw error;
       return { kind: "error", code: error.code, message: error.message };
+    } finally {
+      lock.endStep(holder, now());
+      lock.release(holder);
     }
   }
 
