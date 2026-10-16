@@ -1,0 +1,26 @@
+# segredos
+.env
+.env.*
+!.env.example
+
+# pesquisa e notas privadas (não publicar)
+research/
+
+# dependências e build
+node_modules/
+.next/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# dados locais
+*.sqlite
+*.sqlite-journal
+data/
+
+# sistema
+.DS_Store
+
+# planejamento interno (spec e plano): fora do repositório público
+docs/superpowers/
