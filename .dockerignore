@@ -5,8 +5,10 @@
 **/test-results
 **/*.sqlite*
 .git
-.env*
+**/.env*
 !.env.example
 research
 data
 apps/web/data
+docs/superpowers
+.superpowers
