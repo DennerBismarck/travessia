@@ -29,4 +29,40 @@ test("executa a travessia e confere os quatro movimentos na Base Sepolia", async
   await expect(page.getByTestId("replay-result")).toContainText("Mesmo transactionId e mesmo txHash");
   expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
   expect(await seriousA11yViolations(page)).toEqual([]);
+  const permalink = await page.getByRole("link", { name: "Link permanente" }).getAttribute("href");
+  expect(permalink).toMatch(/^\/r\/[0-9a-f]{12}$/);
+
+  const csv = await page.request.get(`${permalink}/csv`);
+  expect(csv.status()).toBe(200);
+  expect(csv.headers()["content-type"]).toContain("text/csv");
+  const lines = (await csv.text()).replace(/^﻿/, "").trimEnd().split("\r\n");
+  expect(lines).toHaveLength(5);
+  expect(lines.slice(1).every((line) => line.includes(",confere,"))).toBe(true);
+
+  const runImage = await page.request.get(`${permalink}/opengraph-image`);
+  expect(runImage.headers()["content-type"]).toBe("image/png");
+
+  await page.goto(permalink!);
+  await expect(page.getByTestId("verification-result").filter({ hasText: /^confere$/ })).toHaveCount(4);
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /opengraph-image/);
+  expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
+  expect(await seriousA11yViolations(page)).toEqual([]);
+});
+
+test("preview do link raiz e 404 para comprovante inexistente", async ({ page }) => {
+  const image = await page.request.get("/opengraph-image");
+  expect(image.status()).toBe(200);
+  expect(image.headers()["content-type"]).toBe("image/png");
+  await page.goto("/");
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute("content", /opengraph-image/);
+  expect((await page.request.get("/r/000000000000")).status()).toBe(404);
+  expect((await page.request.get("/r/naoexiste/csv")).status()).toBe(404);
+});
+
+test("kill switch: mensagem clara e link para a última travessia concluída", async ({ page }) => {
+  test.skip(!process.env.E2E_KILL_SWITCH, "só com o servidor iniciado com KILL_SWITCH=true");
+  await page.goto("/");
+  await page.getByRole("button", { name: "Executar com R$ 54,00" }).click();
+  await expect(page.getByText("As execuções estão pausadas no momento.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Veja a última travessia concluída." })).toHaveAttribute("href", /^\/r\/[0-9a-f]{12}$/);
 });

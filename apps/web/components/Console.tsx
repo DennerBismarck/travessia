@@ -29,6 +29,8 @@ export function Console() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [notice, setNotice] = useState<string | null>(null);
   const [fallback, setFallback] = useState<{ text: string; runId: string | null } | null>(null);
+  // O botão só habilita depois da hidratação: antes disso um clique não teria efeito.
+  const [hydrated, setHydrated] = useState(false);
 
   const loadWallet = useCallback(async () => {
     try {
@@ -40,6 +42,7 @@ export function Console() {
   }, []);
 
   useEffect(() => {
+    setHydrated(true);
     void loadWallet();
     fetch("/api/health", { cache: "no-store" })
       .then((response) => response.json() as Promise<HealthView>)
@@ -70,7 +73,7 @@ export function Console() {
     <>
       <WalletPanel wallet={wallet} />
       <div className="controls">
-        <button type="button" className="primary" onClick={run} disabled={phase === "running"}>
+        <button type="button" className="primary" onClick={run} disabled={!hydrated || phase === "running"}>
           Executar com R$ 54,00
         </button>
         <p className="run-status" data-testid="run-status" role="status" aria-live="polite">
