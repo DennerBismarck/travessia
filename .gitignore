@@ -28,3 +28,4 @@ docs/superpowers/
 *.sqlite-shm
 *.tsbuildinfo
 apps/web/next-env.d.ts
+apps/web/AGENTS.md
