@@ -59,7 +59,7 @@ pnpm --filter @travessia/web dev      # http://localhost:3000
 | --- | --- |
 | `pnpm test` | testes unitários, sem rede (roda no CI) |
 | `pnpm lint && pnpm typecheck` | lint e tipos (roda no CI) |
-| `pnpm contract` | ciclo real no sandbox conferido contra a documentação e a blockchain (lê `.env.sandbox`) |
+| `pnpm contract` | ciclo real no sandbox conferido contra o que a Travessia espera e contra a blockchain (lê `.env.sandbox`) |
 | `BASE_URL=http://localhost:3000 pnpm e2e` | ciclo pela interface com Playwright, desktop e celular, com checagem de acessibilidade |
 
 ## Estrutura
