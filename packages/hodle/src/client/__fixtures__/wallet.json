@@ -1,0 +1,1 @@
+{"success":true,"data":{"userId":"000000000000000000000000","subAccountId":null,"addresses":{"base-sepolia":"0x54444762e6648a233338D5a4109Eb9612af50bF9"},"balances":[{"network":"base-sepolia","asset":"BRLH","amount":"0.46"},{"network":"base-sepolia","asset":"USDH","amount":"0.05"}],"syncedAt":"2026-10-15T21:28:14.876Z"}}
